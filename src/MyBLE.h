@@ -11,18 +11,19 @@
 #include <Arduino.h>
 #include <BLEDevice.h>
 #include <BLEAdvertisedDevice.h>
+//#include <BLEUUID.h>
 
-class MyBLE: public BLEAdvertisedDeviceCallbacks, BLEExtAdvertisingCallbacks {
+class MyBLE: public BLEAdvertisedDeviceCallbacks {
 
 public:
 	MyBLE();
 	void init();
 	virtual void onResult(BLEAdvertisedDevice advertisedDevice);
-	virtual void onResult(esp_ble_gap_ext_adv_reprot_t report);
-
 
 private:
 	BLEScan* pScan = 0;
+
+	static const BLEUUID serviceUUIDExposure;
 
 };
 
