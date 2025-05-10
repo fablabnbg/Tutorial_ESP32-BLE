@@ -29,6 +29,8 @@ public:
 	virtual void onConnect(BLEClient *pClient);
 	virtual void onDisconnect(BLEClient *pClient);
 
+	bool isHigh = false;
+
 private:
 	BLEScan* pScan = 0;
 

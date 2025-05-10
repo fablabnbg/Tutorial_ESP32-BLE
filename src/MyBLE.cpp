@@ -28,6 +28,8 @@ MyBLE::MyBLE() {
 void MyBLE::init() {
 	BLEDevice::init("FLNTest");
 	xTaskCreate(+[](void* thisInstance){((MyBLE*)thisInstance)->scanLoop();}, "BLEScanUndConnectTask", 3072, this, 5, &scanTaskHandle);
+	pinMode(8, OUTPUT);
+	digitalWrite(8, HIGH);
 }
 
 void MyBLE::scanLoop() {
@@ -63,7 +65,7 @@ void MyBLE::scanLoop() {
 		}
 		while (!reScan) {  // Reconnect - Schleife. Innerhalb der Schleife wird geprüft, ob mindestens 1 Gerät neu verbunden werden muss.
 
-			vTaskDelay(15 * 1000 / portTICK_PERIOD_MS);	// Warte 15 Sec
+			vTaskDelay(7 * 1000 / portTICK_PERIOD_MS);	// Warte 15 Sec
 			if (clients.size() == 0) reScan = true;
 			for (size_t i = 0; i < clients.size(); i++) {
 				Serial.printf("Prüfe Client %x\n", i);
@@ -203,16 +205,19 @@ void MyBLE::notifyCallback(BLERemoteCharacteristic *pBLERemoteCharacteristic, ui
 		hr |= (pData[2] << 8);
 	}
 	Serial.printf("💓: %d ❤ pro minute\n", hr);
+	isHigh = (hr >= 147) && (hr < 152);
 }
 
 
 void MyBLE::onConnect(BLEClient *pClient) {
 	Serial.printf("☎️ Connect %s!\n", pClient->getPeerAddress().toString().c_str());
 	connect = false;
+    digitalWrite(8, LOW);
 }
 
 void MyBLE::onDisconnect(BLEClient *pClient) {
 	Serial.println("☎️ Disconnect!");
+    digitalWrite(8, HIGH);
     for (auto it = clients.begin(); it != clients.end(); ++it) {
         if (it->get() == pClient) {
             Serial.printf("Removing disconnected device: %s\n", pClient->getPeerAddress().toString().c_str());
@@ -236,10 +241,10 @@ bool MyBLE::filterDevice(BLEAdvertisedDevice& dev) {
 			Serial.println("Filter: ❤️ HRM gefunden");
 			return true;
 		}
-		if (dev.getServiceUUID(i).equals(serviceUUIDCSC)) {
-			Serial.println("Filter: 🚴 CSC gefunden");
-			return true;
-		}
+//		if (dev.getServiceUUID(i).equals(serviceUUIDCSC)) {
+//			Serial.println("Filter: 🚴 CSC gefunden");
+//			return true;
+//		}
 	}
 	Serial.println("Filter: 💤 Gerät uninteressant");
 	return false;
